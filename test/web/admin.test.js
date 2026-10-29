@@ -117,3 +117,17 @@ test('/admin/audit memuat user.create dan filter action', async () => {
   assert.ok(!f.text.includes('user.create'));
   assert.match(f.text, /department\.create/);
 });
+
+test('edit user dengan atasan nonaktif: atasan tetap ada di dropdown dan simpan berhasil', async () => {
+  const c = await login(app.base, 'admin');
+  app.db.prepare('UPDATE users SET is_active = 0 WHERE id = ?').run(app.ids.leadit);
+  const form = await c.get(`/admin/users/${app.ids.budi}/edit`);
+  assert.equal(form.status, 200);
+  assert.match(form.text, new RegExp(`value="${app.ids.leadit}" selected>Leadit.*\(nonaktif\)`));
+  const res = await c.post(`/admin/users/${app.ids.budi}`, {
+    name: 'Budi S', nik: '', email: '', level: '1',
+    departmentId: String(dept('IT')), supervisorId: String(app.ids.leadit),
+  });
+  assert.equal(res.status, 302);
+  app.db.prepare('UPDATE users SET is_active = 1 WHERE id = ?').run(app.ids.leadit);
+});

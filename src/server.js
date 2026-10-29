@@ -8,5 +8,5 @@ if (!config.sessionSecret) {
 }
 
 const db = openDb();
-const app = createApp({ db, sessionSecret: config.sessionSecret, secureCookie: config.secureCookie });
+const app = createApp({ db, sessionSecret: config.sessionSecret, secureCookie: config.secureCookie, trustProxy: config.trustProxy });
 app.listen(config.port, () => console.log(`Lembur berjalan di http://localhost:${config.port}`));

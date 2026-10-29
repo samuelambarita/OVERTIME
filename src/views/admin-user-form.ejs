@@ -41,7 +41,7 @@
       <select name="supervisorId">
         <option value="">(Tanpa atasan, hanya Presdir)</option>
         <% supervisors.forEach(function (s) { %>
-        <option value="<%= s.id %>"<%= String(values.supervisorId) === String(s.id) ? ' selected' : '' %>><%= s.name %> — <%= LEVEL_NAMES[s.level] %> — <%= s.department %></option>
+        <option value="<%= s.id %>"<%= String(values.supervisorId) === String(s.id) ? ' selected' : '' %>><%= s.name %> — <%= LEVEL_NAMES[s.level] %> — <%= s.department %><%= s.is_active ? '' : ' (nonaktif)' %></option>
         <% }) %>
       </select>
     </label>

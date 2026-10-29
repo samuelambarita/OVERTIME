@@ -50,10 +50,12 @@ function createAdminRoutes(db) {
   const flash = (req, type, message) => { req.session.flash = { type, message }; };
 
   const formView = (res, { mode, id, values, errors, status = 200 }) => {
+    // Atasan saat ini tetap ditawarkan walau nonaktif, agar menyimpan form tidak gagal.
+    const current = id ? (users.getUser(db, id) || {}).supervisor_id ?? null : null;
     const supervisors = db.prepare(
-      `SELECT u.id, u.name, u.level, d.name AS department FROM users u
-       JOIN departments d ON d.id = u.department_id WHERE u.is_active = 1 ORDER BY u.name, u.id`
-    ).all().filter((s) => s.id !== id);
+      `SELECT u.id, u.name, u.level, u.is_active, d.name AS department FROM users u
+       JOIN departments d ON d.id = u.department_id WHERE u.is_active = 1 OR u.id = ? ORDER BY u.name, u.id`
+    ).all(current).filter((s) => s.id !== id);
     res.view('admin-user-form', {
       title: mode === 'new' ? 'User Baru' : 'Ubah User', section: 'users', mode, id, values, errors,
       departments: departments.listDepartments(db), supervisors, LEVEL_NAMES,

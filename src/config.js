@@ -7,5 +7,6 @@ module.exports = {
   port: Number(env.PORT || 3000),
   sessionSecret: env.SESSION_SECRET,
   secureCookie: env.HTTPS === 'true',
+  trustProxy: env.TRUST_PROXY === 'true',
   dbFile: env.DB_FILE || 'data/lembur.db',
 };

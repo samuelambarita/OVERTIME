@@ -28,10 +28,11 @@ function viewHelper(req, res, next) {
 }
 
 // extend(app): hook opsional (dipakai test) untuk menambah rute sebelum handler 404.
-function createApp({ db, sessionSecret, secureCookie = false, extend }) {
+function createApp({ db, sessionSecret, secureCookie = false, trustProxy = false, extend }) {
   const app = express();
   app.locals.db = db;
   app.disable('x-powered-by');
+  if (trustProxy) app.set('trust proxy', 1);
   app.set('view engine', 'ejs');
   app.set('views', path.join(__dirname, 'views'));
 
