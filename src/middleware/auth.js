@@ -38,12 +38,12 @@ function requireLogin(req, res, next) {
   return next();
 }
 
-const requireLevel = (min) => (req, res, next) => (
-  req.user && req.user.level >= min ? next() : next(new ForbiddenError())
-);
+const withLogin = (check) => (req, res, next) => requireLogin(req, res, (err) => {
+  if (err) return next(err);
+  return check(req) ? next() : next(new ForbiddenError());
+});
 
-function requireAdmin(req, res, next) {
-  return req.user && req.user.is_admin ? next() : next(new ForbiddenError());
-}
+const requireLevel = (min) => withLogin((req) => req.user.level >= min);
+const requireAdmin = withLogin((req) => !!req.user.is_admin);
 
 module.exports = { loadUser, requireLogin, requireLevel, requireAdmin };

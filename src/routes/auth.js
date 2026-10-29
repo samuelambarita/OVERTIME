@@ -58,8 +58,13 @@ function createAuthRoutes(db) {
       }
       return next(err);
     }
-    req.session.flash = { type: 'success', message: 'Password berhasil diganti.' };
-    return res.redirect('/');
+    const userId = req.user.id;
+    return req.session.regenerate((err) => {
+      if (err) return next(err);
+      req.session.userId = userId;
+      req.session.flash = { type: 'success', message: 'Password berhasil diganti.' };
+      return req.session.save((err2) => (err2 ? next(err2) : res.redirect('/')));
+    });
   });
 
   return router;

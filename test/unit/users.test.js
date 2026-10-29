@@ -108,3 +108,12 @@ test('listUsers tahan page non-integer/besar; updateUser abaikan undefined', () 
   assert.strictEqual(u.level, 1);
   assert.strictEqual(u.supervisor_id, ids.leadit);
 });
+
+test('changePassword menulis audit user.change_password', () => {
+  const { db, ids } = setup();
+  users.changePassword(db, ids.budi, 'Password123', 'Baru12345');
+  const row = db.prepare("SELECT * FROM audit_log WHERE action = 'user.change_password'").get();
+  assert.equal(row.entity, 'user');
+  assert.equal(row.entity_id, ids.budi);
+  assert.equal(row.actor_id, ids.budi);
+});

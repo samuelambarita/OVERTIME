@@ -2,10 +2,10 @@ const { openDb } = require('../src/db');
 const { buildDemoOrg } = require('../src/db/demo');
 const { createApp } = require('../src/app');
 
-async function startApp() {
+async function startApp({ extend } = {}) {
   const db = openDb(':memory:');
   const ids = buildDemoOrg(db);
-  const app = createApp({ db, sessionSecret: 'test-secret', secureCookie: false });
+  const app = createApp({ db, sessionSecret: 'test-secret', secureCookie: false, extend });
   const server = await new Promise((resolve) => {
     const s = app.listen(0, '127.0.0.1', () => resolve(s));
   });

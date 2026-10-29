@@ -6,6 +6,15 @@ class SqliteStore extends session.Store {
   constructor(db) {
     super();
     this.db = db;
+    this.lastPurge = 0;
+  }
+
+  // Hapus sesi kedaluwarsa paling sering sekali per menit.
+  _purge() {
+    const now = Date.now();
+    if (now - this.lastPurge < 60 * 1000) return;
+    this.lastPurge = now;
+    this.db.prepare('DELETE FROM sessions WHERE expires_at <= ?').run(now);
   }
 
   _expiry(sess) {
@@ -16,6 +25,7 @@ class SqliteStore extends session.Store {
 
   get(sid, cb) {
     try {
+      this._purge();
       const row = this.db.prepare('SELECT data, expires_at FROM sessions WHERE sid = ?').get(sid);
       if (!row) return cb(null, null);
       if (row.expires_at <= Date.now()) {
@@ -30,6 +40,7 @@ class SqliteStore extends session.Store {
 
   set(sid, sess, cb) {
     try {
+      this._purge();
       this.db.prepare(
         `INSERT INTO sessions (sid, data, expires_at) VALUES (?, ?, ?)
          ON CONFLICT(sid) DO UPDATE SET data = excluded.data, expires_at = excluded.expires_at`

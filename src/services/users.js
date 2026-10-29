@@ -165,6 +165,7 @@ function changePassword(db, userId, oldPw, newPw) {
   if (typeof newPw !== 'string' || newPw.length < 8) throw new ValidationError([PW_MSG]);
   db.prepare('UPDATE users SET password_hash = ?, must_change_password = 0 WHERE id = ?')
     .run(bcrypt.hashSync(newPw, 10), userId);
+  audit.log(db, userId, 'user.change_password', 'user', userId);
 }
 
 const like = (q) => `%${String(q).replace(/[\\%_]/g, '\\$&')}%`;

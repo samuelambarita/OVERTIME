@@ -104,3 +104,77 @@ test('nav menampilkan menu sesuai level', async () => {
   assert.doesNotMatch(emp.text, /href="\/persetujuan"/);
   assert.match(emp.text, /href="\/admin"/);
 });
+
+const NO_LEAK = (text) => {
+  assert.doesNotMatch(text, / at /);
+  assert.doesNotMatch(text, /node_modules/);
+  assert.ok(!text.includes('src' + String.fromCharCode(92)));
+};
+
+test('charset tidak dikenal pada POST /login -> 4xx tanpa stack trace', async () => {
+  const res = await fetch(`${app.base}/login`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/x-www-form-urlencoded; charset=foo' },
+    body: 'username=a&password=b',
+  });
+  assert.ok(res.status >= 400 && res.status < 500, `status ${res.status}`);
+  NO_LEAK(await res.text());
+});
+
+test('body terlalu besar -> 4xx tanpa stack trace', async () => {
+  const res = await fetch(`${app.base}/login`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/x-www-form-urlencoded' },
+    body: `username=${'a'.repeat(200 * 1024)}`,
+  });
+  assert.equal(res.status, 413);
+  NO_LEAK(await res.text());
+});
+
+test('POST text/plain dengan header csrf valid tidak crash', async () => {
+  const c = new Client(app.base);
+  await c.get('/login');
+  const res = await fetch(`${app.base}/login`, {
+    method: 'POST',
+    headers: { 'content-type': 'text/plain', 'x-csrf-token': c.csrf, cookie: c._cookieHeader() },
+    body: 'hai',
+  });
+  assert.equal(res.status, 200);
+  assert.match(await res.text(), /Username atau password salah\./);
+});
+
+test('ganti password menulis audit_log dan tetap login', async () => {
+  const c = await login(app.base, 'deputi');
+  const res = await c.post('/ganti-password', {
+    old_password: 'Password123', new_password: 'PasswordBaru2', confirm_password: 'PasswordBaru2',
+  });
+  assert.equal(res.status, 302);
+  assert.equal((await c.get('/')).status, 200);
+  const row = app.db.prepare("SELECT * FROM audit_log WHERE action = 'user.change_password' AND entity_id = ?").get(app.ids.deputi);
+  assert.ok(row);
+  assert.equal(row.actor_id, app.ids.deputi);
+});
+
+test('requireLevel/requireAdmin: 403 untuk level rendah, redirect bila belum login', async () => {
+  const { requireLevel, requireAdmin } = require('../../src/middleware/auth');
+  const a2 = await startApp({
+    extend: (a) => {
+      a.get('/uji-level', requireLevel(3), (req, res) => res.send('ok'));
+      a.get('/uji-admin', requireAdmin, (req, res) => res.send('ok'));
+    },
+  });
+  try {
+    assert.equal((await new Client(a2.base).get('/uji-level')).location, '/login');
+    const emp = await login(a2.base, 'budi');
+    assert.equal((await emp.get('/uji-level')).status, 403);
+    assert.equal((await emp.get('/uji-admin')).status, 403);
+    const mgr = await login(a2.base, 'mgrit');
+    assert.equal((await mgr.get('/uji-level')).status, 200);
+    a2.db.prepare("UPDATE users SET must_change_password = 1 WHERE username = 'mgrit'").run();
+    assert.equal((await mgr.get('/uji-level')).location, '/ganti-password');
+    const adm = await login(a2.base, 'admin');
+    assert.equal((await adm.get('/uji-admin')).status, 200);
+  } finally {
+    await a2.close();
+  }
+});
