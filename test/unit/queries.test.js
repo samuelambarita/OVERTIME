@@ -1,4 +1,4 @@
-﻿const test = require('node:test');
+const test = require('node:test');
 const assert = require('node:assert');
 const { openDb } = require('../../src/db');
 const { buildDemoOrg } = require('../../src/db/demo');
