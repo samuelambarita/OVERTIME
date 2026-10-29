@@ -6,9 +6,10 @@ const { listManagerQueue, listHrQueue } = require('../services/queries');
 const { listDepartments } = require('../services/departments');
 const { formatHours, durationMinutes } = require('../services/time');
 const { checkWarnings } = require('../services/overtime');
+const { pageParams } = require('../services/paging');
 
 const str = (v) => (typeof v === 'string' ? v : '');
-const pageOf = (v) => Math.max(1, Math.floor(Number(v)) || 1);
+const pageOf = (v) => pageParams(v).page;
 
 // Parameter query yang dipertahankan; semuanya dinormalisasi (whitelist).
 function managerQuery(q) {

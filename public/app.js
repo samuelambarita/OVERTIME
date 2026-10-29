@@ -54,3 +54,8 @@ document.addEventListener('keydown', function (e) {
 document.addEventListener('change', function (e) {
   if (e.target.matches && e.target.matches('[data-member-search]')) e.stopPropagation();
 }, true);
+
+// Catatan persetujuan: Enter tidak boleh mengirim form (keputusan bersifat final).
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Enter' && e.target.matches && e.target.matches('[data-no-enter-submit]')) e.preventDefault();
+}, true);

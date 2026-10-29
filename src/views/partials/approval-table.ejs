@@ -5,7 +5,7 @@
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   <div class="toolbar">
     <label class="grow">Catatan (wajib saat menolak)
-      <textarea name="note" rows="2" maxlength="500"></textarea>
+      <textarea name="note" data-no-enter-submit rows="2" maxlength="500"></textarea>
     </label>
     <button type="submit" name="decision" value="APPROVE" class="btn">Setujui yang dipilih</button>
     <button type="submit" name="decision" value="REJECT" class="btn btn-danger">Tolak yang dipilih</button>
@@ -30,7 +30,7 @@
           <td class="wrap" title="<%= r.activity %>"><%= r.activity.length > 120 ? r.activity.slice(0, 120) + '…' : r.activity %></td>
           <td class="wrap"><% r.warnings.forEach(function (w) { %><span class="warn-text"><%= w %></span> <% }) %></td>
           <td class="row-actions">
-            <input type="text" name="note" form="row-<%= r.id %>" maxlength="500" placeholder="Catatan" aria-label="Catatan untuk <%= r.name %>">
+            <input type="text" name="note" data-no-enter-submit form="row-<%= r.id %>" maxlength="500" placeholder="Catatan" aria-label="Catatan untuk <%= r.name %>">
             <button type="submit" form="row-<%= r.id %>" name="decision" value="APPROVE" class="btn btn-sm">Setujui</button>
             <button type="submit" form="row-<%= r.id %>" name="decision" value="REJECT" class="btn btn-sm btn-danger">Tolak</button>
           </td>

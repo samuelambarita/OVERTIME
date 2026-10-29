@@ -97,3 +97,24 @@ test('POST /persetujuan tanpa CSRF -> 403', async () => {
   const res = await c.post('/persetujuan', { ids: [1], decision: 'APPROVE', _csrf: null });
   assert.equal(res.status, 403);
 });
+
+test('budi POST /persetujuan -> 403; mgrit POST /persetujuan-hr -> 403', async () => {
+  const b = await login(app.base, 'budi');
+  assert.equal((await b.post('/persetujuan', { ids: [1], decision: 'APPROVE' })).status, 403);
+  const m = await login(app.base, 'mgrit');
+  assert.equal((await m.post('/persetujuan-hr', { ids: [1], decision: 'APPROVE' })).status, 403);
+});
+
+test('kegiatan dengan HTML di-escape di isi dan atribut title; page ekstrem diklem', async () => {
+  const evil = '"><script>alert(1)</script>';
+  mk('andi', { startTime: '20:00', endTime: '21:00', activity: evil });
+  const c = await login(app.base, 'mgrit');
+  const page = await c.get('/persetujuan?page=1e21');
+  assert.equal(page.status, 200);
+  assert.ok(!page.text.includes('<script>alert(1)'));
+  const res = await c.post('/persetujuan?page=1e21', { decision: 'APPROVE' });
+  assert.equal(res.location, '/persetujuan?tab=mine&page=100000');
+  const ok = await c.get('/persetujuan');
+  assert.ok(ok.text.includes('title="&#34;&gt;&lt;script&gt;alert(1)&lt;/script&gt;"'));
+  assert.ok(ok.text.includes('data-no-enter-submit'));
+});
