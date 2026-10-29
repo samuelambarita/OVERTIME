@@ -292,6 +292,14 @@ Service menerima objek `db` sebagai parameter dan tidak tahu-menahu soal Express
 - README berisi panduan menjalankan sebagai service di Windows (NSSM) dan Linux (systemd), serta panduan backup (salin `data/lembur.db` saat aplikasi berhenti, atau gunakan `VACUUM INTO` lewat `npm run backup`).
 - `npm run seed -- --demo` mengisi data contoh (struktur organisasi lengkap) untuk mencoba aplikasi.
 
-## 12. Di Luar Cakupan
+## 12. Deliverable Tambahan: Dokumen PRD
+
+Setelah aplikasi selesai dan seluruh test lulus, buat dokumen **PRD (Product Requirements Document)** berbahasa Indonesia di folder terpisah dari project: `D:\Kerja\learning\TUGAS AI\document\`.
+
+- File: `PRD-Aplikasi-Pengajuan-Lembur.docx` dan `PRD-Aplikasi-Pengajuan-Lembur.pdf`, dengan isi yang sama.
+- Isi: latar belakang dan tujuan, ruang lingkup, pengguna dan role, kebutuhan fungsional (pengajuan, alur approval dua tahap, realisasi, rekap, admin), aturan bisnis, kebutuhan non-fungsional (performa ringan, keamanan, portabilitas), daftar halaman, alur status, di luar cakupan, serta panduan instalasi singkat.
+- Isi PRD disusun berdasarkan aplikasi yang sudah jadi, sehingga tetap sesuai kalau ada penyesuaian saat implementasi.
+
+## 13. Di Luar Cakupan
 
 Notifikasi email/WhatsApp, perhitungan upah lembur, integrasi absensi, SSO/LDAP, aplikasi mobile, dan lampiran file. Semua bisa ditambahkan nanti.
