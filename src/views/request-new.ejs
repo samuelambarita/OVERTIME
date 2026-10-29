@@ -20,7 +20,7 @@
   </label>
   <fieldset>
     <legend>Anggota (untuk pengajuan kelompok)</legend>
-    <input type="search" id="member-search" placeholder="Cari nama, username, atau NIK (min. 2 huruf)" autocomplete="off"
+    <input type="search" id="member-search" data-member-search form="member-search-none" placeholder="Cari nama, username, atau NIK (min. 2 huruf)" autocomplete="off"
       name="q" hx-get="/pengajuan/cari-anggota" hx-trigger="input changed delay:300ms" hx-target="#member-results" hx-swap="innerHTML">
     <div id="member-results"></div>
     <div id="member-chips" class="chips">

@@ -30,7 +30,7 @@ test('budi kirim PERSONAL valid -> redirect ke detail yang memuat kode & kegiata
   assert.match(res.location, /^\/pengajuan\/\d+$/);
   const detail = await c.get(res.location);
   assert.equal(detail.status, 200);
-  assert.match(detail.text, /LBR-2026-/);
+  assert.match(detail.text, new RegExp(`LBR-${new Date().getFullYear()}-`));
   assert.match(detail.text, /Menyelesaikan laporan bulanan/);
   assert.match(detail.text, /terkirim/);
 });
@@ -137,4 +137,51 @@ test('realisasi peserta APPROVED lalu tampil di detail', async () => {
   const after2 = await b.get(res.location);
   assert.match(after2.text, /Realisasi disimpan/);
   assert.match(after2.text, /1,5/);
+});
+
+test('cek mengabaikan id tidak aktif/tidak ada dan tidak error untuk >50 id', async () => {
+  const c = await login(app.base, 'budi');
+  const d = tomorrow();
+  app.db.prepare('UPDATE users SET is_active = 0 WHERE username = ?').run('sari');
+  createRequest(app.db, user('andi'), { type: 'PERSONAL', workDate: d, startTime: '03:00', endTime: '04:00', activity: 'Aktivitas dini hari' });
+  const ids = [app.ids.sari, 999999, ...Array.from({ length: 60 }, (_, i) => 1000 + i)];
+  const res = await c.post('/pengajuan/cek', { type: 'GROUP', workDate: d, startTime: '03:00', endTime: '04:00', memberIds: ids }, { htmx: true });
+  assert.equal(res.status, 200);
+  assert.doesNotMatch(res.text, /Sari/);
+  // andi aktif & ada di 50 id pertama -> bentrok terdeteksi
+  const res2 = await c.post('/pengajuan/cek', { type: 'GROUP', workDate: d, startTime: '03:00', endTime: '04:00', memberIds: [app.ids.andi] }, { htmx: true });
+  assert.match(res2.text, /Andi/);
+  app.db.prepare('UPDATE users SET is_active = 1 WHERE username = ?').run('sari');
+});
+
+test('id non-integer -> 404', async () => {
+  const c = await login(app.base, 'budi');
+  assert.equal((await c.get('/pengajuan/abc')).status, 404);
+  assert.equal((await c.post('/pengajuan/abc/batal')).status, 404);
+});
+
+test('IDOR: andi tidak bisa realisasi/batal milik budi; mgrit tidak bisa baca notifikasi orang lain', async () => {
+  const d = time.formatDate(new Date(Date.now() - 86400000));
+  const past = new Date(Date.now() - 3 * 86400000);
+  const r = createRequest(app.db, user('budi'), { type: 'PERSONAL', workDate: d, startTime: '05:00', endTime: '06:00', activity: 'Pemeliharaan basis data' }, past);
+  const pid = app.db.prepare('SELECT id FROM overtime_participants WHERE request_id = ?').get(r.id).id;
+  decideManager(app.db, user('mgrit'), [pid], 'APPROVE', '', past);
+  decideHr(app.db, user('hr'), [pid], 'APPROVE', '', past);
+  const a = await login(app.base, 'andi');
+  assert.equal((await a.post(`/pengajuan/peserta/${pid}/realisasi`, { actualStart: '05:00', actualEnd: '06:00' })).status, 403);
+  const open = createRequest(app.db, user('budi'), { type: 'PERSONAL', workDate: tomorrow(), startTime: '04:30', endTime: '05:30', activity: 'Pekerjaan batal nanti' });
+  assert.equal((await a.post(`/pengajuan/${open.id}/batal`)).status, 403);
+  const n = app.db.prepare('INSERT INTO notifications (user_id, message, link, read_at, created_at) VALUES (?, ?, NULL, NULL, ?)')
+    .run(app.ids.budi, 'rahasia', time.nowIso()).lastInsertRowid;
+  const m = await login(app.base, 'mgrit');
+  await m.post(`/notifikasi/${n}/baca`);
+  assert.equal(app.db.prepare('SELECT read_at FROM notifications WHERE id = ?').get(n).read_at, null);
+});
+
+test('pengguna nonaktif tidak muncul di pencarian anggota', async () => {
+  app.db.prepare('UPDATE users SET is_active = 0 WHERE username = ?').run('sari');
+  const c = await login(app.base, 'budi');
+  const res = await c.get('/pengajuan/cari-anggota?q=sar', { htmx: true });
+  assert.doesNotMatch(res.text, /sari/);
+  app.db.prepare('UPDATE users SET is_active = 1 WHERE username = ?').run('sari');
 });

@@ -46,3 +46,11 @@ document.addEventListener('click', function (e) {
     parent.dispatchEvent(new Event('change', { bubbles: true }));
   }
 });
+
+// Kolom cari anggota bukan bagian dari form: Enter tidak mengirim form, change tidak memicu /cek.
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Enter' && e.target.matches && e.target.matches('[data-member-search]')) e.preventDefault();
+}, true);
+document.addEventListener('change', function (e) {
+  if (e.target.matches && e.target.matches('[data-member-search]')) e.stopPropagation();
+}, true);

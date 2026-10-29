@@ -1,11 +1,16 @@
 const express = require('express');
 const { requireLogin } = require('../middleware/auth');
-const { ValidationError } = require('../errors');
+const { ValidationError, NotFoundError } = require('../errors');
 const { createRequest, cancelRequest, saveRealization, checkWarnings, findConflicts } = require('../services/overtime');
 const { getRequestDetail, listMyRequests } = require('../services/queries');
 const { searchUsers, getUser } = require('../services/users');
 const { formatDate, addDays, formatHours, durationMinutes } = require('../services/time');
 
+const idParam = (v) => {
+  const n = Number(v);
+  if (!Number.isInteger(n) || n < 1) throw new NotFoundError();
+  return n;
+};
 const str = (v) => (typeof v === 'string' ? v : '');
 
 function readForm(body) {
@@ -46,7 +51,9 @@ function createRequestRoutes(db) {
 
   router.post('/pengajuan/cek', requireLogin, (req, res) => {
     const f = readForm(req.body);
-    const ids = [...new Set([req.user.id, ...(f.type === 'GROUP' ? f.memberIds : [])])];
+    const wanted = f.type === 'GROUP' ? [...new Set(f.memberIds)].slice(0, 50) : [];
+    const isActive = db.prepare('SELECT 1 FROM users WHERE id = ? AND is_active = 1');
+    const ids = [...new Set([req.user.id, ...wanted.filter((id) => isActive.get(id))])];
     let conflicts = [];
     let warnings = [];
     try {
@@ -82,7 +89,7 @@ function createRequestRoutes(db) {
   });
 
   router.get('/pengajuan/:id', requireLogin, (req, res) => {
-    const { request, participants, timeline } = getRequestDetail(db, req.user, req.params.id);
+    const { request, participants, timeline } = getRequestDetail(db, req.user, idParam(req.params.id));
     const isRequester = request.requester_id === req.user.id;
     const canCancel = isRequester && request.status === 'PROCESSING'
       && !participants.some((p) => p.manager_decided_by || p.hr_decided_by);
@@ -92,7 +99,7 @@ function createRequestRoutes(db) {
   });
 
   router.post('/pengajuan/peserta/:pid/realisasi', requireLogin, (req, res) => {
-    const pid = Number(req.params.pid);
+    const pid = idParam(req.params.pid);
     const row = db.prepare('SELECT request_id FROM overtime_participants WHERE id = ?').get(pid);
     try {
       saveRealization(db, req.user, pid, { actualStart: str(req.body.actualStart), actualEnd: str(req.body.actualEnd) }, new Date());
@@ -105,7 +112,7 @@ function createRequestRoutes(db) {
   });
 
   router.post('/pengajuan/:id/batal', requireLogin, (req, res) => {
-    const id = Number(req.params.id);
+    const id = idParam(req.params.id);
     try {
       cancelRequest(db, req.user, id);
       req.session.flash = { type: 'success', message: 'Pengajuan dibatalkan.' };
