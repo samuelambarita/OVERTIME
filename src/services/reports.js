@@ -44,6 +44,7 @@ function summarize(rows) {
   const users = new Map();
   const depts = new Map();
   for (const r of rows) {
+    if (r.status !== 'APPROVED') continue;
     totalMinutes += r.minutes;
     if (!users.has(r.username)) users.set(r.username, { name: r.name, department: r.department, minutes: 0 });
     users.get(r.username).minutes += r.minutes;
@@ -56,7 +57,7 @@ function summarize(rows) {
 
 function csvField(value) {
   let s = String(value ?? '');
-  if (/^[=+\-@]/.test(s)) s = "'" + s;
+  if (/^[=+\-@\t\r]/.test(s)) s = "'" + s;
   if (/[;"\r\n]/.test(s)) s = '"' + s.replace(/"/g, '""') + '"';
   return s;
 }

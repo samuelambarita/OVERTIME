@@ -1,7 +1,7 @@
 <h1><%= request.code %> <%- include('partials/status', { s: request.status }) %></h1>
 <div class="card">
   <p><strong>Pengaju:</strong> <%= request.requester_name %></p>
-  <p><strong>Jenis:</strong> <%= request.type === 'GROUP' ? 'Kelompok' : 'Pribadi' %></p>
+  <p><strong>Jenis:</strong> <%= request.type === 'GROUP' ? 'Kelompok' : 'Perorangan' %></p>
   <p><strong>Tanggal:</strong> <%= request.work_date %>, <%= request.start_time %>&ndash;<%= request.end_time %></p>
   <p><strong>Kegiatan:</strong> <%= request.activity %></p>
   <% if (canCancel) { %>
@@ -21,7 +21,7 @@
         <td><%= p.name %></td>
         <td><%= p.department %></td>
         <td>
-          <%- include('partials/status', { s: p.status }) %>
+          <%- include('partials/status', { s: request.status === 'CANCELLED' ? 'CANCELLED' : p.status }) %>
           <% if (p.manager_decided_by_name) { %><br><span class="muted">Manager: <%= p.manager_decided_by_name %><% if (p.manager_note) { %> &mdash; <%= p.manager_note %><% } %></span><% } %>
           <% if (p.hr_decided_by_name) { %><br><span class="muted">HR: <%= p.hr_decided_by_name %><% if (p.hr_note) { %> &mdash; <%= p.hr_note %><% } %></span><% } %>
         </td>
@@ -46,6 +46,6 @@
 <h2>Riwayat</h2>
 <ul>
   <% timeline.forEach(function (t) { %>
-  <li><span class="muted"><%= t.created_at.replace('T', ' ') %></span> &mdash; <%= t.actor_name || 'Sistem' %>: <%= t.action %></li>
+  <li><span class="muted"><%= t.created_at.replace('T', ' ') %></span> &mdash; <%= t.actor_name || 'Sistem' %>: <%= actionLabels[t.action] || t.action %><% if (t.participant_name) { %> (<%= t.participant_name %>)<% } %></li>
   <% }) %>
 </ul>

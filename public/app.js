@@ -59,3 +59,9 @@ document.addEventListener('change', function (e) {
 document.addEventListener('keydown', function (e) {
   if (e.key === 'Enter' && e.target.matches && e.target.matches('[data-no-enter-submit]')) e.preventDefault();
 }, true);
+
+// Konfirmasi tombol massal (CSP-safe): batal -> form tidak dikirim.
+document.addEventListener('click', function (e) {
+  var btn = e.target.closest ? e.target.closest('[data-confirm]') : null;
+  if (btn && !window.confirm(btn.getAttribute('data-confirm'))) e.preventDefault();
+});

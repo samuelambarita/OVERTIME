@@ -1,6 +1,6 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const { openDb } = require('./index');
+const config = require('../config');
 
 const pad = (n) => String(n).padStart(2, '0');
 
@@ -9,7 +9,7 @@ function backupName(now) {
   return `lembur-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}.db`;
 }
 
-function backup(db, dir = 'backups', now = new Date()) {
+function backup(db, dir = config.backupDir, now = new Date()) {
   const file = db.prepare('PRAGMA database_list').all().find((r) => r.name === 'main');
   if (!file || !file.file) throw new Error('Backup tidak tersedia untuk database :memory:.');
   fs.mkdirSync(dir, { recursive: true });
@@ -20,11 +20,15 @@ function backup(db, dir = 'backups', now = new Date()) {
 }
 
 if (require.main === module) {
-  const config = require('../config');
   if (config.dbFile === ':memory:') {
     console.error('Backup tidak tersedia untuk database :memory:.');
     process.exit(1);
   }
+  if (!fs.existsSync(config.dbFile)) {
+    console.error(`File database tidak ditemukan: ${config.dbFile}`);
+    process.exit(1);
+  }
+  const { openDb } = require('./index');
   const db = openDb();
   try {
     console.log(backup(db));

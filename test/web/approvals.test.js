@@ -118,3 +118,12 @@ test('kegiatan dengan HTML di-escape di isi dan atribut title; page ekstrem dikl
   assert.ok(ok.text.includes('title="&#34;&gt;&lt;script&gt;alert(1)&lt;/script&gt;"'));
   assert.ok(ok.text.includes('data-no-enter-submit'));
 });
+
+test('M5: textarea catatan massal boleh Enter; tombol massal punya data-confirm', async () => {
+  const c = await login(app.base, 'mgrit');
+  const page = await c.get('/persetujuan');
+  assert.match(page.text, /<textarea name="note" rows/);
+  assert.doesNotMatch(page.text, /<textarea[^>]*data-no-enter-submit/);
+  assert.match(page.text, /data-confirm="Setujui semua[^"]*"/);
+  assert.match(page.text, /data-confirm="Tolak semua[^"]*"/);
+});

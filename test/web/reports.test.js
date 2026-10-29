@@ -65,3 +65,17 @@ test('mgrfin /rekap memuat sari tetapi tidak budi; filter hr bekerja', async () 
   assert.ok(!h.text.includes('Sari'));
   assert.match(h.text, /2:00|2 jam|2,0/);
 });
+
+test('M6: from > to ditukar', async () => {
+  const c = await login(app.base, 'hr');
+  const res = await c.get('/rekap?from=2026-10-20&to=2026-10-10');
+  assert.equal(res.status, 200);
+  assert.match(res.text, /name="from" value="2026-10-10"/);
+  assert.match(res.text, /name="to" value="2026-10-20"/);
+});
+
+test('I1: rekap Semua memberi label Total jam disetujui', async () => {
+  const c = await login(app.base, 'hr');
+  const res = await c.get('/rekap?status=ALL');
+  assert.match(res.text, /Total jam disetujui/);
+});

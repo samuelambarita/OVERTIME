@@ -20,7 +20,7 @@
         <td><a href="/pengajuan/<%= r.id %>"><%= r.code %></a></td>
         <td><%= r.work_date %></td>
         <td><%= r.start_time %>&ndash;<%= r.end_time %></td>
-        <td><%= r.type === 'GROUP' ? 'Kelompok' : 'Pribadi' %></td>
+        <td><%= r.type === 'GROUP' ? 'Kelompok' : 'Perorangan' %></td>
         <td><%= r.participant_count %></td>
         <td><%- include('partials/status', { s: r.status }) %></td>
         <td class="wrap"><%= r.activity %></td>

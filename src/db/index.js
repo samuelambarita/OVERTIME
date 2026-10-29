@@ -10,6 +10,7 @@ function openDb(file = config.dbFile) {
   if (!memory) fs.mkdirSync(path.dirname(path.resolve(file)), { recursive: true });
   const db = new DatabaseSync(file);
   db.exec('PRAGMA foreign_keys = ON');
+  db.exec('PRAGMA busy_timeout = 5000');
   if (!memory) db.exec('PRAGMA journal_mode = WAL');
   db.exec(SCHEMA);
   return db;

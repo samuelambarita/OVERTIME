@@ -65,9 +65,9 @@ test('recap: realisasi dipakai bila ada', () => {
 
 test('summarize: total dan urut menurun', () => {
   const rows = [
-    { name: 'A', username: 'a', department: 'IT', category: 'IT', minutes: 60 },
-    { name: 'B', username: 'b', department: 'Finance', category: 'NON_IT', minutes: 180 },
-    { name: 'A', username: 'a', department: 'IT', category: 'IT', minutes: 30 },
+    { name: 'A', username: 'a', department: 'IT', category: 'IT', minutes: 60, status: 'APPROVED' },
+    { name: 'B', username: 'b', department: 'Finance', category: 'NON_IT', minutes: 180, status: 'APPROVED' },
+    { name: 'A', username: 'a', department: 'IT', category: 'IT', minutes: 30, status: 'APPROVED' },
   ];
   const s = summarize(rows);
   assert.strictEqual(s.totalMinutes, 270);

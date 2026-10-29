@@ -185,3 +185,45 @@ test('pengguna nonaktif tidak muncul di pencarian anggota', async () => {
   assert.doesNotMatch(res.text, /sari/);
   app.db.prepare('UPDATE users SET is_active = 1 WHERE username = ?').run('sari');
 });
+
+test('M1/M2: peserta pengajuan dibatalkan tampil Dibatalkan; riwayat berlabel Indonesia dengan nama', async () => {
+  const b = await login(app.base, 'budi');
+  const res = await b.post('/pengajuan', valid({ startTime: '11:30', endTime: '12:30' }));
+  await b.post(`${res.location}/batal`);
+  const detail = await b.get(res.location);
+  assert.doesNotMatch(detail.text, /Menunggu Manager/);
+  assert.match(detail.text, /Pengajuan dibuat/);
+  assert.match(detail.text, /Pengajuan dibatalkan/);
+  assert.doesNotMatch(detail.text, /request\.create/);
+});
+
+test('M2: riwayat keputusan memuat label dan nama peserta', async () => {
+  const now = new Date();
+  const r = createRequest(app.db, user('budi'), { type: 'PERSONAL', workDate: tomorrow(), startTime: '09:00', endTime: '10:00', activity: 'Riwayat keputusan uji' }, now);
+  const pid = app.db.prepare('SELECT id FROM overtime_participants WHERE request_id = ?').get(r.id).id;
+  decideManager(app.db, user('mgrit'), [pid], 'APPROVE', '', now);
+  const b = await login(app.base, 'budi');
+  const detail = await b.get(`/pengajuan/${r.id}`);
+  assert.match(detail.text, /Disetujui manager \(Budi/);
+  assert.doesNotMatch(detail.text, /participant\.manager_approve/);
+});
+
+test('M3: form realisasi tidak tampil sebelum lembur dimulai', async () => {
+  const now = new Date();
+  const r = createRequest(app.db, user('budi'), { type: 'PERSONAL', workDate: time.addDays(time.formatDate(new Date()), 5), startTime: '04:00', endTime: '05:00', activity: 'Realisasi belum waktunya' }, now);
+  const pid = app.db.prepare('SELECT id FROM overtime_participants WHERE request_id = ?').get(r.id).id;
+  decideManager(app.db, user('mgrit'), [pid], 'APPROVE', '', now);
+  decideHr(app.db, user('hr'), [pid], 'APPROVE', '', now);
+  const b = await login(app.base, 'budi');
+  const detail = await b.get(`/pengajuan/${r.id}`);
+  assert.doesNotMatch(detail.text, /\/realisasi"/);
+});
+
+test('M9: label Perorangan (bukan Pribadi)', async () => {
+  const b = await login(app.base, 'budi');
+  const form = await b.get('/pengajuan/baru');
+  assert.match(form.text, />Perorangan</);
+  assert.doesNotMatch(form.text, /Pribadi/);
+  const list = await b.get('/pengajuan');
+  assert.doesNotMatch(list.text, /Pribadi/);
+});

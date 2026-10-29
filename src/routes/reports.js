@@ -20,9 +20,12 @@ function filtersOf(q) {
   const today = new Date();
   const dep = Number(str(q.departmentId));
   const status = str(q.status);
+  let from = validDate(q.from) || formatDate(new Date(today.getFullYear(), today.getMonth(), 1));
+  let to = validDate(q.to) || formatDate(today);
+  if (from > to) [from, to] = [to, from];
   return {
-    from: validDate(q.from) || formatDate(new Date(today.getFullYear(), today.getMonth(), 1)),
-    to: validDate(q.to) || formatDate(today),
+    from,
+    to,
     departmentId: Number.isInteger(dep) && dep > 0 ? dep : '',
     category: ['IT', 'NON_IT'].includes(q.category) ? q.category : '',
     // Parameter status tidak ada -> APPROVED; '' (pilihan "Semua") -> tanpa filter.

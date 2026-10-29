@@ -5,10 +5,10 @@
   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
   <div class="toolbar">
     <label class="grow">Catatan (wajib saat menolak)
-      <textarea name="note" data-no-enter-submit rows="2" maxlength="500"></textarea>
+      <textarea name="note" rows="2" maxlength="500"></textarea>
     </label>
-    <button type="submit" name="decision" value="APPROVE" class="btn">Setujui yang dipilih</button>
-    <button type="submit" name="decision" value="REJECT" class="btn btn-danger">Tolak yang dipilih</button>
+    <button type="submit" name="decision" value="APPROVE" class="btn" data-confirm="Setujui semua peserta yang dipilih?">Setujui yang dipilih</button>
+    <button type="submit" name="decision" value="REJECT" class="btn btn-danger" data-confirm="Tolak semua peserta yang dipilih?">Tolak yang dipilih</button>
   </div>
   <div class="table-wrap">
     <table>

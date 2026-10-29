@@ -4,12 +4,22 @@ const { ValidationError, NotFoundError } = require('../errors');
 const { createRequest, cancelRequest, saveRealization, checkWarnings, findConflicts } = require('../services/overtime');
 const { getRequestDetail, listMyRequests } = require('../services/queries');
 const { searchUsers, getUser } = require('../services/users');
-const { formatDate, addDays, formatHours, durationMinutes } = require('../services/time');
+const { formatDate, addDays, formatHours, durationMinutes, toRange } = require('../services/time');
 
 const idParam = (v) => {
   const n = Number(v);
   if (!Number.isInteger(n) || n < 1) throw new NotFoundError();
   return n;
+};
+const ACTION_LABELS = {
+  'request.create': 'Pengajuan dibuat',
+  'request.cancel': 'Pengajuan dibatalkan',
+  'participant.manager_approve': 'Disetujui manager',
+  'participant.manager_reject': 'Ditolak manager',
+  'participant.hr_approve': 'Disetujui HR',
+  'participant.hr_reject': 'Ditolak HR',
+  'participant.realize': 'Realisasi diisi',
+  'participant.skip_manager': 'Tahap manager dilewati',
 };
 const str = (v) => (typeof v === 'string' ? v : '');
 
@@ -93,9 +103,13 @@ function createRequestRoutes(db) {
     const isRequester = request.requester_id === req.user.id;
     const canCancel = isRequester && request.status === 'PROCESSING'
       && !participants.some((p) => p.manager_decided_by || p.hr_decided_by);
-    const canRealize = (p) => p.status === 'APPROVED' && request.status !== 'CANCELLED'
+    // Jendela waktu sama dengan saveRealization: setelah jam mulai rencana, sampai work_date + 7 hari.
+    const now = new Date();
+    const inWindow = now >= toRange(request.work_date, request.start_time, request.end_time).start
+      && formatDate(now) <= addDays(request.work_date, 7);
+    const canRealize = (p) => p.status === 'APPROVED' && request.status !== 'CANCELLED' && inWindow
       && (p.user_id === req.user.id || isRequester);
-    res.view('request-detail', { title: request.code, request, participants, timeline, canCancel, canRealize, formatHours, durationMinutes });
+    res.view('request-detail', { title: request.code, request, participants, timeline, canCancel, canRealize, formatHours, durationMinutes, actionLabels: ACTION_LABELS });
   });
 
   router.post('/pengajuan/peserta/:pid/realisasi', requireLogin, (req, res) => {

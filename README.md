@@ -31,15 +31,20 @@ Edit `.env`:
 | `SESSION_SECRET` | Wajib. Isi string acak panjang, mis. `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`. |
 | `HTTPS` | `true` bila diakses lewat HTTPS (cookie sesi diberi flag Secure). |
 | `TRUST_PROXY` | `true` bila berjalan di belakang reverse proxy (lihat bagian HTTPS). |
-| `DB_FILE` | Lokasi file SQLite (default `data/lembur.db`). |
+| `DB_FILE` | Lokasi file SQLite (default `data/lembur.db`). Path relatif dihitung dari folder proyek, bukan dari direktori kerja. |
+| `APP_TZ` | Zona waktu server (default `Asia/Jakarta`). Jam lembur memakai waktu lokal server; `TZ` yang sudah diset di lingkungan mengalahkan `APP_TZ`. |
 | `ADMIN_USERNAME`, `ADMIN_PASSWORD` | Opsional, dipakai `npm run seed` bila argumen tidak diberikan. |
 
-Buat admin pertama lalu jalankan:
+Buat admin pertama. Cara yang disarankan: isi `ADMIN_USERNAME` dan `ADMIN_PASSWORD` di `.env` (agar password tidak muncul di riwayat perintah), jalankan seed, lalu kosongkan lagi `ADMIN_PASSWORD`:
 
 ```bash
-npm run seed -- --username admin --password GantiDenganPasswordKuat
+npm run seed
 npm start
 ```
+
+Alternatif: `npm run seed -- --username admin --password <password>` (password terlihat di command line).
+
+Setelah seed, login sebagai admin dan buka **Admin → Users**, edit akun admin untuk menetapkan atasannya (supervisor). Admin bootstrap dibuat tanpa atasan, sehingga pengajuan lembur miliknya tidak punya rantai persetujuan sampai atasan diisi.
 
 Buka `http://localhost:3000`. Admin diminta mengganti password saat login pertama. Seed bersifat idempoten: bila admin sudah ada, ia mencetak `Admin sudah ada, dilewati.` Password minimal 8 karakter dan tidak pernah dicetak.
 
@@ -82,13 +87,15 @@ Menu **Persetujuan** untuk level 3 ke atas, **Persetujuan HR** dan **Rekap** ses
 ### Windows (NSSM)
 
 ```bat
-nssm install LemburApp "C:\Program Files\nodejs\node.exe" src\server.js
+nssm install LemburApp "C:\Program Files\nodejs\node.exe"
 nssm set LemburApp AppDirectory "C:\aplikasi\lembur-app"
 nssm set LemburApp AppParameters "--disable-warning=ExperimentalWarning src\server.js"
+nssm set LemburApp AppStdout "C:\aplikasi\lembur-app\logs\out.log"
+nssm set LemburApp AppStderr "C:\aplikasi\lembur-app\logs\err.log"
 nssm start LemburApp
 ```
 
-Pastikan `.env` ada di folder aplikasi.
+Pastikan `.env` ada di folder aplikasi dan folder `logs` sudah dibuat (`logs/` ada di `.gitignore`).
 
 ### Linux (systemd)
 
@@ -105,6 +112,7 @@ ExecStart=/usr/bin/node --disable-warning=ExperimentalWarning src/server.js
 Restart=on-failure
 User=lembur
 Environment=NODE_ENV=production
+Environment=TZ=Asia/Jakarta
 
 [Install]
 WantedBy=multi-user.target
@@ -132,7 +140,7 @@ TRUST_PROXY=true
 npm run backup
 ```
 
-Membuat salinan konsisten lewat `VACUUM INTO` ke `backups/lembur-YYYYMMDD-HHMMSS.db` (waktu lokal) dan mencetak path-nya; aman dijalankan saat aplikasi hidup. Folder `backups/` dihitung dari direktori tempat perintah dijalankan. Perintah ditolak bila `DB_FILE=:memory:`. Jadwalkan dengan Task Scheduler atau cron, dan salin hasilnya ke tempat lain.
+Membuat salinan konsisten lewat `VACUUM INTO` ke `backups/lembur-YYYYMMDD-HHMMSS.db` (waktu lokal) dan mencetak path-nya; aman dijalankan saat aplikasi hidup. Folder `backups/` ada di folder proyek (bukan direktori kerja). Perintah ditolak bila `DB_FILE=:memory:` atau file database belum ada. Jadwalkan dengan Task Scheduler atau cron, dan salin hasilnya ke tempat lain.
 
 Restore: hentikan aplikasi, salin file backup menjadi file `DB_FILE` (default `data/lembur.db`), hapus file `lembur.db-wal` dan `lembur.db-shm` bila ada, lalu jalankan lagi.
 

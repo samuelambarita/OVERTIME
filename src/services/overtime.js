@@ -136,6 +136,15 @@ function cancelRequest(db, actor, requestId) {
       throw new ValidationError(['Pengajuan tidak bisa dibatalkan karena sudah ada keputusan.']);
     }
     db.prepare("UPDATE overtime_requests SET status = 'CANCELLED', updated_at = ? WHERE id = ?").run(nowIso(), requestId);
+    const targets = new Set();
+    for (const p of db.prepare('SELECT user_id, manager_approver_id FROM overtime_participants WHERE request_id = ?').all(requestId)) {
+      targets.add(p.user_id);
+      if (p.manager_approver_id) targets.add(p.manager_approver_id);
+    }
+    targets.delete(actor.id);
+    for (const uid of targets) {
+      notify(db, uid, `Pengajuan lembur ${req.code} dibatalkan oleh ${actor.name}.`, `/pengajuan/${requestId}`);
+    }
     audit.log(db, actor.id, 'request.cancel', 'request', requestId, { code: req.code });
   });
 }

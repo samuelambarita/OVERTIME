@@ -41,8 +41,13 @@ function getRequestDetail(db, actor, id) {
   }
   if (!allowed) throw new ForbiddenError();
   const timeline = db.prepare(
-    `SELECT a.id, a.action, a.entity, a.entity_id, a.detail, a.created_at, a.actor_id, u.name AS actor_name
+    `SELECT a.id, a.action, a.entity, a.entity_id, a.detail, a.created_at, a.actor_id, u.name AS actor_name,
+            CASE WHEN a.entity = 'participant' THEN pu.name
+                 WHEN a.action = 'participant.skip_manager' THEN su.name END AS participant_name
      FROM audit_log a LEFT JOIN users u ON u.id = a.actor_id
+     LEFT JOIN overtime_participants tp ON a.entity = 'participant' AND tp.id = a.entity_id
+     LEFT JOIN users pu ON pu.id = tp.user_id
+     LEFT JOIN users su ON a.action = 'participant.skip_manager' AND su.id = json_extract(a.detail, '$.userId')
      WHERE (a.entity = 'request' AND a.entity_id = ?)
         OR (a.entity = 'participant' AND a.entity_id IN (SELECT id FROM overtime_participants WHERE request_id = ?))
      ORDER BY a.created_at, a.id`

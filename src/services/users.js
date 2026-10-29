@@ -163,6 +163,7 @@ function changePassword(db, userId, oldPw, newPw) {
     throw new ValidationError(['Password lama salah.']);
   }
   if (typeof newPw !== 'string' || newPw.length < 8) throw new ValidationError([PW_MSG]);
+  if (newPw === oldPw) throw new ValidationError(['Password baru harus berbeda dari password lama.']);
   db.prepare('UPDATE users SET password_hash = ?, must_change_password = 0 WHERE id = ?')
     .run(bcrypt.hashSync(newPw, 10), userId);
   audit.log(db, userId, 'user.change_password', 'user', userId);
