@@ -1,0 +1,90 @@
+<h1>Rekap Lembur</h1>
+<form method="get" action="/rekap" class="filters">
+  <label>Dari
+    <input type="date" name="from" value="<%= f.from %>">
+  </label>
+  <label>Sampai
+    <input type="date" name="to" value="<%= f.to %>">
+  </label>
+  <label>Departemen
+    <select name="departmentId">
+      <option value="">Semua</option>
+      <% departments.forEach(function (d) { %>
+      <option value="<%= d.id %>"<%= Number(f.departmentId) === d.id ? ' selected' : '' %>><%= d.name %></option>
+      <% }) %>
+    </select>
+  </label>
+  <label>Kategori
+    <select name="category">
+      <option value="">Semua</option>
+      <option value="IT"<%- f.category === 'IT' ? ' selected' : '' %>>IT</option>
+      <option value="NON_IT"<%- f.category === 'NON_IT' ? ' selected' : '' %>>Non-IT</option>
+    </select>
+  </label>
+  <label>Status
+    <select name="status">
+      <option value="ALL"<%- f.status === 'ALL' || f.status === '' ? ' selected' : '' %>>Semua</option>
+      <% ['APPROVED', 'REJECTED', 'WAITING_MANAGER', 'WAITING_HR'].forEach(function (s) { %>
+      <option value="<%= s %>"<%= f.status === s ? ' selected' : '' %>><%= STATUS_LABELS[s] %></option>
+      <% }) %>
+    </select>
+  </label>
+  <button type="submit" class="btn btn-secondary">Filter</button>
+  <a class="btn" href="<%= csvHref %>">Unduh CSV</a>
+</form>
+
+<div class="grid">
+  <div class="card"><div class="muted">Total jam lembur</div><div class="stat"><%= formatHours(summary.totalMinutes) %> jam</div></div>
+  <div class="card"><div class="muted">Jumlah baris</div><div class="stat"><%= total %></div></div>
+</div>
+
+<div class="grid">
+  <div>
+    <h2>Per departemen</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Departemen</th><th>Kategori</th><th>Jam</th></tr></thead>
+      <tbody>
+        <% summary.perDepartment.forEach(function (d) { %>
+        <tr><td><%= d.department %></td><td><%= d.category === 'IT' ? 'IT' : 'Non-IT' %></td><td><%= formatHours(d.minutes) %> jam</td></tr>
+        <% }) %>
+        <% if (!summary.perDepartment.length) { %><tr><td colspan="3" class="muted">Tidak ada data.</td></tr><% } %>
+      </tbody>
+    </table></div>
+  </div>
+  <div>
+    <h2>Per karyawan</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Nama</th><th>Departemen</th><th>Jam</th></tr></thead>
+      <tbody>
+        <% summary.perUser.forEach(function (u) { %>
+        <tr><td><%= u.name %></td><td><%= u.department %></td><td><%= formatHours(u.minutes) %> jam</td></tr>
+        <% }) %>
+        <% if (!summary.perUser.length) { %><tr><td colspan="3" class="muted">Tidak ada data.</td></tr><% } %>
+      </tbody>
+    </table></div>
+  </div>
+</div>
+
+<h2>Detail</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Kode</th><th>Tanggal</th><th>Nama</th><th>Departemen</th><th>Jam</th><th>Durasi</th><th>Sumber</th><th>Status</th><th>Kegiatan</th></tr></thead>
+    <tbody>
+      <% rows.forEach(function (r) { %>
+      <tr>
+        <td><%= r.code %></td>
+        <td><%= r.workDate %></td>
+        <td><%= r.name %></td>
+        <td><%= r.department %></td>
+        <td><%= r.start %>&ndash;<%= r.end %></td>
+        <td><%= formatHours(r.minutes) %> jam</td>
+        <td><%= r.source %></td>
+        <td><%- include('partials/status', { s: r.status }) %></td>
+        <td class="wrap"><%= r.activity %></td>
+      </tr>
+      <% }) %>
+      <% if (!rows.length) { %><tr><td colspan="9" class="muted">Tidak ada data untuk filter ini.</td></tr><% } %>
+    </tbody>
+  </table>
+</div>
+<%- include('partials/pagination', { page: page, total: total, base: base }) %>

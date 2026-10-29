@@ -10,7 +10,9 @@ const { createDashboardRoutes } = require('./routes/dashboard');
 const { createRequestRoutes } = require('./routes/requests');
 const { createApprovalRoutes } = require('./routes/approvals');
 const { createNotificationRoutes } = require('./routes/notifications');
-const { ForbiddenError, NotFoundError } = require('./errors');
+const { createReportRoutes } = require('./routes/reports');
+const { createAdminRoutes } = require('./routes/admin');
+const { ForbiddenError,NotFoundError } = require('./errors');
 
 const EIGHT_HOURS = 8 * 60 * 60 * 1000;
 
@@ -56,6 +58,8 @@ function createApp({ db, sessionSecret, secureCookie = false, extend }) {
   app.use(createRequestRoutes(db));
   app.use(createApprovalRoutes(db));
   app.use(createNotificationRoutes(db));
+  app.use(createReportRoutes(db));
+  app.use(createAdminRoutes(db));
 
   if (extend) extend(app);
 

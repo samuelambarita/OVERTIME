@@ -1,0 +1,45 @@
+<h1>Admin</h1>
+<%- include('partials/admin-nav', { section: section }) %>
+<form method="post" action="/admin/departemen" class="filters">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <label>Nama departemen
+    <input type="text" name="name" required>
+  </label>
+  <label>Kategori
+    <select name="category">
+      <option value="IT">IT</option>
+      <option value="NON_IT">Non-IT</option>
+    </select>
+  </label>
+  <button type="submit" class="btn">Tambah</button>
+</form>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Nama</th><th>Kategori</th><th>User</th><th>Aksi</th></tr></thead>
+    <tbody>
+      <% departments.forEach(function (d) { %>
+      <tr>
+        <td colspan="3">
+          <form method="post" action="/admin/departemen/<%= d.id %>" class="filters">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <input type="text" name="name" value="<%= d.name %>" required>
+            <select name="category">
+              <option value="IT"<%- d.category === 'IT' ? ' selected' : '' %>>IT</option>
+              <option value="NON_IT"<%- d.category === 'NON_IT' ? ' selected' : '' %>>Non-IT</option>
+            </select>
+            <span class="muted"><%= d.userCount %> user</span>
+            <button type="submit" class="btn btn-secondary btn-sm">Simpan</button>
+          </form>
+        </td>
+        <td class="row-actions">
+          <form method="post" action="/admin/departemen/<%= d.id %>/hapus" class="inline">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
+          </form>
+        </td>
+      </tr>
+      <% }) %>
+      <% if (!departments.length) { %><tr><td colspan="4" class="muted">Belum ada departemen.</td></tr><% } %>
+    </tbody>
+  </table>
+</div>

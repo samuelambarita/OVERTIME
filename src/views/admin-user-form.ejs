@@ -1,0 +1,52 @@
+<h1><%= mode === 'new' ? 'User Baru' : 'Ubah User' %></h1>
+<%- include('partials/admin-nav', { section: section }) %>
+<section class="card card-narrow">
+  <%- include('partials/errors') %>
+  <form method="post" action="<%= mode === 'new' ? '/admin/users' : '/admin/users/' + id %>">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <% if (mode === 'new') { %>
+    <label>Username
+      <input type="text" name="username" value="<%= values.username %>" autocomplete="off" required>
+    </label>
+    <label>Password awal (minimal 8 karakter)
+      <input type="password" name="password" autocomplete="new-password" minlength="8" required>
+    </label>
+    <% } else { %>
+    <p>Username: <strong><%= values.username %></strong></p>
+    <% } %>
+    <label>Nama
+      <input type="text" name="name" value="<%= values.name %>" required>
+    </label>
+    <label>NIK
+      <input type="text" name="nik" value="<%= values.nik %>">
+    </label>
+    <label>Email
+      <input type="text" name="email" value="<%= values.email %>">
+    </label>
+    <label>Jabatan
+      <select name="level">
+        <% Object.keys(LEVEL_NAMES).forEach(function (l) { %>
+        <option value="<%= l %>"<%= String(values.level) === l ? ' selected' : '' %>><%= LEVEL_NAMES[l] %></option>
+        <% }) %>
+      </select>
+    </label>
+    <label>Departemen
+      <select name="departmentId">
+        <% departments.forEach(function (d) { %>
+        <option value="<%= d.id %>"<%= String(values.departmentId) === String(d.id) ? ' selected' : '' %>><%= d.name %></option>
+        <% }) %>
+      </select>
+    </label>
+    <label>Atasan
+      <select name="supervisorId">
+        <option value="">(Tanpa atasan, hanya Presdir)</option>
+        <% supervisors.forEach(function (s) { %>
+        <option value="<%= s.id %>"<%= String(values.supervisorId) === String(s.id) ? ' selected' : '' %>><%= s.name %> — <%= LEVEL_NAMES[s.level] %> — <%= s.department %></option>
+        <% }) %>
+      </select>
+    </label>
+    <label><input type="checkbox" name="isAdmin" value="1"<%- values.isAdmin ? ' checked' : '' %>> Admin</label>
+    <button type="submit" class="btn">Simpan</button>
+    <a class="btn btn-secondary" href="/admin/users">Batal</a>
+  </form>
+</section>

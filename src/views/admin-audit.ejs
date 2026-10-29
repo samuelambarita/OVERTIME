@@ -1,0 +1,26 @@
+<h1>Admin</h1>
+<%- include('partials/admin-nav', { section: section }) %>
+<form method="get" action="/admin/audit" class="filters">
+  <label>Aksi (awalan, mis. user.)
+    <input type="text" name="action" value="<%= action %>">
+  </label>
+  <button type="submit" class="btn btn-secondary">Filter</button>
+</form>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Waktu</th><th>Aktor</th><th>Aksi</th><th>Entitas</th><th>Detail</th></tr></thead>
+    <tbody>
+      <% rows.forEach(function (r) { %>
+      <tr>
+        <td><%= r.created_at.replace('T', ' ') %></td>
+        <td><%= r.actor_name || '-' %></td>
+        <td><%= r.action %></td>
+        <td><%= r.entity %><%= r.entity_id != null ? ' #' + r.entity_id : '' %></td>
+        <td class="wrap"><%= r.detail || '' %></td>
+      </tr>
+      <% }) %>
+      <% if (!rows.length) { %><tr><td colspan="5" class="muted">Belum ada catatan.</td></tr><% } %>
+    </tbody>
+  </table>
+</div>
+<%- include('partials/pagination', { page: page, total: total, base: base }) %>
