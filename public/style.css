@@ -61,3 +61,13 @@ fieldset{border:1px solid var(--border);border-radius:6px;margin:0 0 .9rem;paddi
 .chip{display:inline-flex;align-items:center;gap:.3rem;padding:.15rem .6rem;border-radius:999px;background:#e0e7ff}
 .chip-remove{background:none;border:0;cursor:pointer;font:inherit;color:var(--err)}
 .member-results{list-style:none;margin:.5rem 0;padding:0;display:flex;flex-wrap:wrap;gap:.4rem}
+.tabs{display:flex;gap:.5rem;margin-bottom:1rem}
+.tabs a{padding:.4rem .9rem;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--fg);text-decoration:none}
+.tabs a.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.toolbar{display:flex;flex-wrap:wrap;gap:.75rem;align-items:flex-end;margin-bottom:1rem}
+.toolbar .grow{flex:1 1 18rem;margin:0}
+.toolbar textarea{min-height:2.5rem}
+.group-row th{background:#eef1f5;text-align:left}
+.warn-text{display:inline-block;padding:.1rem .4rem;border-radius:4px;background:var(--warn-bg);color:#92400e;font-size:.85rem}
+.row-actions{white-space:nowrap}
+.row-actions input[type=text]{display:inline-block;width:9rem;margin:0 .25rem 0 0;padding:.25rem .4rem}

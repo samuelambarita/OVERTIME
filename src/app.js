@@ -8,6 +8,7 @@ const { loadUser } = require('./middleware/auth');
 const { createAuthRoutes } = require('./routes/auth');
 const { createDashboardRoutes } = require('./routes/dashboard');
 const { createRequestRoutes } = require('./routes/requests');
+const { createApprovalRoutes } = require('./routes/approvals');
 const { createNotificationRoutes } = require('./routes/notifications');
 const { ForbiddenError, NotFoundError } = require('./errors');
 
@@ -53,6 +54,7 @@ function createApp({ db, sessionSecret, secureCookie = false, extend }) {
 
   app.use(createDashboardRoutes(db));
   app.use(createRequestRoutes(db));
+  app.use(createApprovalRoutes(db));
   app.use(createNotificationRoutes(db));
 
   if (extend) extend(app);

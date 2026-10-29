@@ -1,0 +1,7 @@
+<h1>Persetujuan Manager</h1>
+<nav class="tabs">
+  <a href="/persetujuan?tab=mine"<%- tab === 'mine' ? ' class="active" aria-current="page"' : '' %>>Untuk saya</a>
+  <a href="/persetujuan?tab=team"<%- tab === 'team' ? ' class="active" aria-current="page"' : '' %>>Seluruh tim</a>
+</nav>
+<%- include('partials/approval-table', { rows: rows, action: action }) %>
+<%- include('partials/pagination', { page: page, total: total, base: base }) %>

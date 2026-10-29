@@ -1,0 +1,21 @@
+<h1>Persetujuan HR</h1>
+<form method="get" action="/persetujuan-hr" class="filters">
+  <label>Departemen
+    <select name="departmentId">
+      <option value="">Semua</option>
+      <% departments.forEach(function (d) { %>
+      <option value="<%= d.id %>"<%= Number(departmentId) === d.id ? ' selected' : '' %>><%= d.name %></option>
+      <% }) %>
+    </select>
+  </label>
+  <label>Kategori
+    <select name="category">
+      <option value="">Semua</option>
+      <option value="IT"<%- category === 'IT' ? ' selected' : '' %>>IT</option>
+      <option value="NON_IT"<%- category === 'NON_IT' ? ' selected' : '' %>>Non-IT</option>
+    </select>
+  </label>
+  <button type="submit" class="btn btn-secondary">Filter</button>
+</form>
+<%- include('partials/approval-table', { rows: rows, action: action }) %>
+<%- include('partials/pagination', { page: page, total: total, base: base }) %>
