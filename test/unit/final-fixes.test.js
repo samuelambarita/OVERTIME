@@ -54,6 +54,21 @@ test('I2: config menetapkan TZ=Asia/Jakarta bila TZ kosong; APP_TZ dihormati', (
   assert.equal(r2.stdout.trim(), 'Asia/Makassar');
 });
 
+test('I2: APP_TZ dari file .env dihormati; TZ dari environment tetap menang', () => {
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'lembur-tz-'));
+  try {
+    fs.mkdirSync(path.join(tmp, 'src'));
+    fs.copyFileSync(path.join(ROOT, 'src', 'config.js'), path.join(tmp, 'src', 'config.js'));
+    fs.writeFileSync(path.join(tmp, '.env'), 'APP_TZ=Asia/Makassar\n');
+    const env = { TZ: undefined, APP_TZ: undefined, NODE_PATH: path.join(ROOT, 'node_modules') };
+    const code = "require('./src/config'); console.log(process.env.TZ)";
+    assert.equal(run(code, env, tmp).stdout.trim(), 'Asia/Makassar');
+    assert.equal(run(code, { ...env, TZ: 'Asia/Jayapura' }, tmp).stdout.trim(), 'Asia/Jayapura');
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+});
+
 test('I3: cancelRequest memberi notifikasi peserta (bukan pengaju) dan manager sekali', () => {
   const { db, ids, actor } = setup();
   const r = ot.createRequest(db, actor('budi'), {

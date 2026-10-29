@@ -1,8 +1,9 @@
-// Zona waktu harus ditetapkan sebelum ada pemakaian Date (jam lembur memakai waktu lokal server).
-process.env.TZ = process.env.TZ || process.env.APP_TZ || 'Asia/Jakarta';
-
 const path = require('node:path');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env'), quiet: true });
+
+// Zona waktu harus ditetapkan sebelum ada pemakaian Date (jam lembur memakai waktu lokal server).
+// Diletakkan setelah dotenv agar APP_TZ/TZ dari .env ikut terbaca; variabel environment asli tetap menang.
+process.env.TZ = process.env.TZ || process.env.APP_TZ || 'Asia/Jakarta';
 
 const env = process.env;
 const root = path.join(__dirname, '..');
