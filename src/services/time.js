@@ -62,6 +62,11 @@ function weekBounds(dateStr) {
   return { from, to: addDays(from, 6) };
 }
 
+// 300 -> '5', 270 -> '4,5' (1 desimal, koma, tanpa ',0')
+function formatHours(minutes) {
+  return String(Math.round(minutes / 6) / 10).replace('.', ',');
+}
+
 function validateSchedule({ workDate, startTime, endTime } = {}, now = new Date()) {
   let dur;
   try {
@@ -83,4 +88,4 @@ function validateSchedule({ workDate, startTime, endTime } = {}, now = new Date(
   return errors;
 }
 
-module.exports = { parseHM, durationMinutes, toRange, overlaps, formatDate, addDays, nowIso, weekBounds, validateSchedule };
+module.exports = { parseHM, durationMinutes, toRange, overlaps, formatDate, addDays, nowIso, weekBounds, validateSchedule, formatHours };
