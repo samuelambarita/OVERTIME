@@ -1,0 +1,28 @@
+{
+  "name": "lembur-app",
+  "version": "1.0.0",
+  "description": "Aplikasi pengajuan lembur",
+  "main": "src/server.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning src/server.js",
+    "test": "node --disable-warning=ExperimentalWarning --test \"test/**/*.test.js\"",
+    "seed": "node --disable-warning=ExperimentalWarning src/db/seed.js",
+    "backup": "node --disable-warning=ExperimentalWarning src/db/backup.js"
+  },
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^18.0.9",
+    "ejs": "^7.0.2",
+    "express": "^5.3.0",
+    "express-session": "^1.19.0"
+  },
+  "private": true,
+  "engines": {
+    "node": ">=22.13"
+  }
+}
