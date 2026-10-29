@@ -1,9 +1,9 @@
 const { nowIso } = require('./time');
 const { pageParams } = require('./paging');
 
-function notify(db, userId, message, link = null) {
+function notify(db, userId, message, link = null, now = new Date()) {
   db.prepare('INSERT INTO notifications (user_id, message, link, read_at, created_at) VALUES (?, ?, ?, NULL, ?)')
-    .run(userId, message, link, nowIso());
+    .run(userId, message, link, nowIso(now));
 }
 
 function listNotifications(db, userId, page = 1) {

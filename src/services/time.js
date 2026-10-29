@@ -88,4 +88,4 @@ function validateSchedule({ workDate, startTime, endTime } = {}, now = new Date(
   return errors;
 }
 
-module.exports = { parseHM, durationMinutes, toRange, overlaps, formatDate, addDays, nowIso, weekBounds, validateSchedule, formatHours };
+module.exports = { parseHM,durationMinutes, toRange, overlaps, formatDate, addDays, nowIso, weekBounds, validateSchedule, formatHours };

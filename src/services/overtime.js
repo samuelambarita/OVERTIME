@@ -1,6 +1,6 @@
 const { tx } = require('../db');
 const { ValidationError, ForbiddenError, NotFoundError } = require('../errors');
-const { validateSchedule, toRange, overlaps, durationMinutes, weekBounds, addDays, nowIso, formatHours } = require('./time');
+const { validateSchedule, toRange, overlaps, durationMinutes, weekBounds, addDays, nowIso, formatDate, parseHM, formatHours } = require('./time');
 const { supervisorChain } = require('./users');
 const { nearestManager, computeRequestStatus } = require('./approval');
 const { notify } = require('./notifications');
@@ -114,10 +114,10 @@ function createRequest(db, actor, input, now = new Date()) {
     db.prepare('UPDATE overtime_requests SET status = ? WHERE id = ?').run(computeRequestStatus(statuses), requestId);
 
     for (const approverId of approvers) {
-      notify(db, approverId, `Pengajuan lembur ${code} menunggu persetujuan Anda.`, '/persetujuan');
+      notify(db, approverId, `Pengajuan lembur ${code} menunggu persetujuan Anda.`, '/persetujuan', now);
     }
     for (const userId of ids) {
-      if (userId !== actor.id) notify(db, userId, `${actor.name} mengajak Anda lembur (${code}).`, `/pengajuan/${requestId}`);
+      if (userId !== actor.id) notify(db, userId, `${actor.name} mengajak Anda lembur (${code}).`, `/pengajuan/${requestId}`, now);
     }
     audit.log(db, actor.id, 'request.create', 'request', requestId, { code, type, participants: ids.length });
     return { id: requestId, code, warnings };
@@ -140,4 +140,34 @@ function cancelRequest(db, actor, requestId) {
   });
 }
 
-module.exports = { findConflicts, checkWarnings, createRequest, cancelRequest };
+function saveRealization(db, actor, participantId, { actualStart, actualEnd } = {}, now = new Date()) {
+  return tx(db, () => {
+    const p = db.prepare(
+      `SELECT p.id, p.user_id, p.status, r.requester_id, r.work_date, r.start_time, r.end_time
+       FROM overtime_participants p JOIN overtime_requests r ON r.id = p.request_id WHERE p.id = ?`
+    ).get(Number(participantId));
+    if (!p) throw new NotFoundError();
+    if (actor.id !== p.user_id && actor.id !== p.requester_id) throw new ForbiddenError();
+    if (p.status !== 'APPROVED') throw new ValidationError(['Realisasi hanya untuk peserta yang disetujui.']);
+    if (now < toRange(p.work_date, p.start_time, p.end_time).start) {
+      throw new ValidationError(['Realisasi bisa diisi setelah lembur dimulai.']);
+    }
+    if (formatDate(now) > addDays(p.work_date, 7)) throw new ValidationError(['Realisasi sudah terkunci (lewat 7 hari).']);
+    let dur;
+    try {
+      parseHM(actualStart);
+      parseHM(actualEnd);
+      dur = durationMinutes(actualStart, actualEnd);
+    } catch (e) {
+      if (e instanceof ValidationError) throw new ValidationError(['Format tanggal/jam tidak valid.']);
+      throw e;
+    }
+    if (dur === 0) throw new ValidationError(['Jam selesai tidak boleh sama dengan jam mulai.']);
+    if (dur > 720) throw new ValidationError(['Durasi lembur maksimal 12 jam.']);
+    db.prepare('UPDATE overtime_participants SET actual_start = ?, actual_end = ?, realized_at = ? WHERE id = ?')
+      .run(actualStart, actualEnd, nowIso(now), p.id);
+    audit.log(db, actor.id, 'participant.realize', 'participant', p.id, { actualStart, actualEnd });
+  });
+}
+
+module.exports = { findConflicts, checkWarnings, createRequest, cancelRequest, saveRealization };
