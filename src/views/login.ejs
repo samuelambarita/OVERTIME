@@ -1,0 +1,14 @@
+<section class="card card-narrow">
+  <h1>Masuk</h1>
+  <%- include('partials/errors') %>
+  <form method="post" action="/login">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <label>Username
+      <input type="text" name="username" value="<%= username %>" autocomplete="username" autofocus required>
+    </label>
+    <label>Password
+      <input type="password" name="password" autocomplete="current-password" required>
+    </label>
+    <button type="submit" class="btn">Masuk</button>
+  </form>
+</section>

@@ -1,0 +1,31 @@
+<% if (locals.user) { %>
+<header class="topbar">
+  <a class="brand" href="/">Lembur</a>
+  <% if (!user.must_change_password) { %>
+  <nav class="menu">
+    <a href="/">Beranda</a>
+    <a href="/lembur/baru">Ajukan</a>
+    <a href="/lembur">Pengajuan Saya</a>
+    <% if (user.level >= 3) { %>
+    <a href="/persetujuan">Persetujuan<% if (pending.manager > 0) { %> <span class="badge"><%= pending.manager %></span><% } %></a>
+    <% } %>
+    <% if (user.level >= 5) { %>
+    <a href="/persetujuan-hr">Persetujuan HR<% if (pending.hr > 0) { %> <span class="badge"><%= pending.hr %></span><% } %></a>
+    <% } %>
+    <% if (user.level >= 3) { %><a href="/rekap">Rekap</a><% } %>
+    <% if (user.is_admin) { %><a href="/admin">Admin</a><% } %>
+  </nav>
+  <% } %>
+  <div class="usermenu">
+    <% if (!user.must_change_password) { %>
+    <a class="bell" href="/notifikasi" title="Notifikasi">Notifikasi<% if (unread > 0) { %> <span class="badge"><%= unread %></span><% } %></a>
+    <% } %>
+    <span class="who"><%= user.name %> (<%= LEVEL_NAMES[user.level] %>)</span>
+    <a href="/ganti-password">Ganti Password</a>
+    <form method="post" action="/logout" class="inline">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button type="submit" class="link">Keluar</button>
+    </form>
+  </div>
+</header>
+<% } %>

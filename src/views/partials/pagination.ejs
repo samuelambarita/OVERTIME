@@ -1,0 +1,9 @@
+<%# Pakai: include('partials/pagination', {page, total, base: '/path?filter=x'}); 25 baris per halaman %>
+<% var perPage = 25; var pages = Math.max(1, Math.ceil(total / perPage)); var sep = base.indexOf('?') >= 0 ? '&' : '?'; %>
+<% if (pages > 1) { %>
+<nav class="pagination" aria-label="Halaman">
+  <% if (page > 1) { %><a href="<%= base + sep %>page=<%= page - 1 %>">&laquo; Sebelumnya</a><% } %>
+  <span>Halaman <%= page %> dari <%= pages %> (<%= total %> data)</span>
+  <% if (page < pages) { %><a href="<%= base + sep %>page=<%= page + 1 %>">Berikutnya &raquo;</a><% } %>
+</nav>
+<% } %>
