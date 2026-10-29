@@ -1,0 +1,9 @@
+<% if (results.length) { %>
+<ul class="member-results">
+  <% results.forEach(function (u) { %>
+  <li><button type="button" class="btn btn-secondary btn-sm" data-add-member data-id="<%= u.id %>" data-name="<%= u.name %>"><%= u.name %> (<%= u.username %>) &middot; <%= u.department %></button></li>
+  <% }) %>
+</ul>
+<% } else { %>
+<p class="muted">Tidak ada hasil.</p>
+<% } %>

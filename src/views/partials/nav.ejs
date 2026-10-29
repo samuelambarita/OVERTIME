@@ -4,8 +4,8 @@
   <% if (!user.must_change_password) { %>
   <nav class="menu">
     <a href="/">Beranda</a>
-    <a href="/lembur/baru">Ajukan</a>
-    <a href="/lembur">Pengajuan Saya</a>
+    <a href="/pengajuan/baru">Ajukan</a>
+    <a href="/pengajuan">Pengajuan Saya</a>
     <% if (user.level >= 3) { %>
     <a href="/persetujuan">Persetujuan<% if (pending.manager > 0) { %> <span class="badge"><%= pending.manager %></span><% } %></a>
     <% } %>
@@ -13,7 +13,7 @@
     <a href="/persetujuan-hr">Persetujuan HR<% if (pending.hr > 0) { %> <span class="badge"><%= pending.hr %></span><% } %></a>
     <% } %>
     <% if (user.level >= 3) { %><a href="/rekap">Rekap</a><% } %>
-    <% if (user.is_admin) { %><a href="/admin">Admin</a><% } %>
+    <% if (user.is_admin) { %><a href="/admin/users">Admin</a><% } %>
   </nav>
   <% } %>
   <div class="usermenu">

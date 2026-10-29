@@ -1,0 +1,51 @@
+<h1><%= request.code %> <%- include('partials/status', { s: request.status }) %></h1>
+<div class="card">
+  <p><strong>Pengaju:</strong> <%= request.requester_name %></p>
+  <p><strong>Jenis:</strong> <%= request.type === 'GROUP' ? 'Kelompok' : 'Pribadi' %></p>
+  <p><strong>Tanggal:</strong> <%= request.work_date %>, <%= request.start_time %>&ndash;<%= request.end_time %></p>
+  <p><strong>Kegiatan:</strong> <%= request.activity %></p>
+  <% if (canCancel) { %>
+  <form method="post" action="/pengajuan/<%= request.id %>/batal" class="inline">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <button type="submit" class="btn btn-danger">Batalkan Pengajuan</button>
+  </form>
+  <% } %>
+</div>
+<h2>Peserta</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Nama</th><th>Departemen</th><th>Status</th><th>Realisasi</th></tr></thead>
+    <tbody>
+      <% participants.forEach(function (p) { %>
+      <tr>
+        <td><%= p.name %></td>
+        <td><%= p.department %></td>
+        <td>
+          <%- include('partials/status', { s: p.status }) %>
+          <% if (p.manager_decided_by_name) { %><br><span class="muted">Manager: <%= p.manager_decided_by_name %><% if (p.manager_note) { %> &mdash; <%= p.manager_note %><% } %></span><% } %>
+          <% if (p.hr_decided_by_name) { %><br><span class="muted">HR: <%= p.hr_decided_by_name %><% if (p.hr_note) { %> &mdash; <%= p.hr_note %><% } %></span><% } %>
+        </td>
+        <td class="wrap">
+          <% if (p.actual_start && p.actual_end) { %>
+          <%= p.actual_start %>&ndash;<%= p.actual_end %> (<%= formatHours(durationMinutes(p.actual_start, p.actual_end)) %> jam)
+          <% } %>
+          <% if (canRealize(p)) { %>
+          <form method="post" action="/pengajuan/peserta/<%= p.id %>/realisasi" class="filters">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <label>Mulai <input type="time" name="actualStart" value="<%= p.actual_start || request.start_time %>" required></label>
+            <label>Selesai <input type="time" name="actualEnd" value="<%= p.actual_end || request.end_time %>" required></label>
+            <button type="submit" class="btn btn-sm">Simpan Realisasi</button>
+          </form>
+          <% } %>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>
+<h2>Riwayat</h2>
+<ul>
+  <% timeline.forEach(function (t) { %>
+  <li><span class="muted"><%= t.created_at.replace('T', ' ') %></span> &mdash; <%= t.actor_name || 'Sistem' %>: <%= t.action %></li>
+  <% }) %>
+</ul>

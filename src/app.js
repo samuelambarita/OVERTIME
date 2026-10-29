@@ -4,8 +4,11 @@ const session = require('express-session');
 const { SqliteStore } = require('./db/session-store');
 const { security } = require('./middleware/security');
 const { csrf } = require('./middleware/csrf');
-const { loadUser, requireLogin } = require('./middleware/auth');
+const { loadUser } = require('./middleware/auth');
 const { createAuthRoutes } = require('./routes/auth');
+const { createDashboardRoutes } = require('./routes/dashboard');
+const { createRequestRoutes } = require('./routes/requests');
+const { createNotificationRoutes } = require('./routes/notifications');
 const { ForbiddenError, NotFoundError } = require('./errors');
 
 const EIGHT_HOURS = 8 * 60 * 60 * 1000;
@@ -48,10 +51,9 @@ function createApp({ db, sessionSecret, secureCookie = false, extend }) {
 
   app.use(createAuthRoutes(db));
 
-  app.get('/', requireLogin, (req, res) => {
-    // Placeholder; Task 9 menggantikan dengan dashboard sebenarnya.
-    res.view('dashboard', { title: 'Beranda' });
-  });
+  app.use(createDashboardRoutes(db));
+  app.use(createRequestRoutes(db));
+  app.use(createNotificationRoutes(db));
 
   if (extend) extend(app);
 

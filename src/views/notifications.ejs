@@ -1,0 +1,24 @@
+<h1>Notifikasi</h1>
+<form method="post" action="/notifikasi/baca-semua">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <button type="submit" class="btn btn-secondary">Tandai semua dibaca</button>
+</form>
+<div class="table-wrap">
+  <table>
+    <tbody>
+      <% rows.forEach(function (n) { %>
+      <tr>
+        <td class="wrap"><% if (!n.read_at) { %><strong><% } %><% if (n.link) { %><a href="<%= n.link %>"><%= n.message %></a><% } else { %><%= n.message %><% } %><% if (!n.read_at) { %></strong><% } %></td>
+        <td class="muted"><%= n.created_at.replace('T', ' ') %></td>
+        <td><% if (!n.read_at) { %>
+          <form method="post" action="/notifikasi/<%= n.id %>/baca" class="inline">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button type="submit" class="btn btn-sm btn-secondary">Tandai dibaca</button>
+          </form><% } %></td>
+      </tr>
+      <% }) %>
+      <% if (!rows.length) { %><tr><td class="muted">Belum ada notifikasi.</td></tr><% } %>
+    </tbody>
+  </table>
+</div>
+<%- include('partials/pagination', { page: page, total: total, base: '/notifikasi' }) %>

@@ -1,3 +1,25 @@
-<%# Placeholder Task 8; diganti pada Task 9 %>
 <h1>Halo, <%= user.name %></h1>
-<p>Selamat datang di aplikasi pengajuan lembur.</p>
+<div class="grid">
+  <div class="card"><div class="muted">Lembur disetujui bulan ini</div><div class="stat"><%= monthHours %> jam</div></div>
+  <% if (user.level >= 3) { %><div class="card"><div class="muted">Menunggu persetujuan Anda</div><div class="stat"><%= pending.manager %></div><a href="/persetujuan">Lihat</a></div><% } %>
+  <% if (user.level >= 5) { %><div class="card"><div class="muted">Menunggu HR</div><div class="stat"><%= pending.hr %></div><a href="/persetujuan-hr">Lihat</a></div><% } %>
+</div>
+<p><a class="btn" href="/pengajuan/baru">Ajukan Lembur</a></p>
+<h2>Pengajuan Terbaru</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Kode</th><th>Tanggal</th><th>Jam</th><th>Status</th><th>Kegiatan</th></tr></thead>
+    <tbody>
+      <% recent.forEach(function (r) { %>
+      <tr>
+        <td><a href="/pengajuan/<%= r.id %>"><%= r.code %></a></td>
+        <td><%= r.work_date %></td>
+        <td><%= r.start_time %>&ndash;<%= r.end_time %></td>
+        <td><%- include('partials/status', { s: r.status }) %></td>
+        <td class="wrap"><%= r.activity %></td>
+      </tr>
+      <% }) %>
+      <% if (!recent.length) { %><tr><td colspan="5" class="muted">Belum ada pengajuan.</td></tr><% } %>
+    </tbody>
+  </table>
+</div>

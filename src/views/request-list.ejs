@@ -1,0 +1,33 @@
+<h1>Pengajuan Saya</h1>
+<form method="get" action="/pengajuan" class="filters">
+  <label>Status
+    <select name="status">
+      <option value="">Semua</option>
+      <% ['PROCESSING', 'APPROVED', 'REJECTED', 'CANCELLED'].forEach(function (s) { %>
+      <option value="<%= s %>"<%= status === s ? ' selected' : '' %>><%= STATUS_LABELS[s] %></option>
+      <% }) %>
+    </select>
+  </label>
+  <button type="submit" class="btn btn-secondary">Filter</button>
+  <a class="btn" href="/pengajuan/baru">Ajukan Lembur</a>
+</form>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Kode</th><th>Tanggal</th><th>Jam</th><th>Jenis</th><th>Peserta</th><th>Status</th><th>Kegiatan</th></tr></thead>
+    <tbody>
+      <% rows.forEach(function (r) { %>
+      <tr>
+        <td><a href="/pengajuan/<%= r.id %>"><%= r.code %></a></td>
+        <td><%= r.work_date %></td>
+        <td><%= r.start_time %>&ndash;<%= r.end_time %></td>
+        <td><%= r.type === 'GROUP' ? 'Kelompok' : 'Pribadi' %></td>
+        <td><%= r.participant_count %></td>
+        <td><%- include('partials/status', { s: r.status }) %></td>
+        <td class="wrap"><%= r.activity %></td>
+      </tr>
+      <% }) %>
+      <% if (!rows.length) { %><tr><td colspan="7" class="muted">Belum ada pengajuan.</td></tr><% } %>
+    </tbody>
+  </table>
+</div>
+<%- include('partials/pagination', { page: page, total: total, base: '/pengajuan?status=' + encodeURIComponent(status) }) %>

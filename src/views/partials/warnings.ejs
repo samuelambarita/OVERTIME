@@ -1,0 +1,12 @@
+<% if (conflicts.length) { %>
+<div class="alert alert-error" role="alert">
+  <strong>Jadwal bentrok:</strong>
+  <ul><% conflicts.forEach(function (n) { %><li><%= n %> sudah punya lembur pada jam tersebut.</li><% }) %></ul>
+</div>
+<% } %>
+<% if (warnings.length) { %>
+<div class="alert alert-warn" role="status">
+  <strong>Peringatan:</strong>
+  <ul><% warnings.forEach(function (w) { %><li><%= w %></li><% }) %></ul>
+</div>
+<% } %>

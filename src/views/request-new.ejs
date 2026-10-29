@@ -1,0 +1,36 @@
+<h1>Ajukan Lembur</h1>
+<%- include('partials/errors') %>
+<form method="post" action="/pengajuan" class="card" hx-post="/pengajuan/cek" hx-trigger="change" hx-target="#warnings" hx-swap="innerHTML">
+  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+  <label>Jenis
+    <select name="type">
+      <option value="PERSONAL"<%= form.type === 'PERSONAL' ? ' selected' : '' %>>Pribadi</option>
+      <option value="GROUP"<%= form.type === 'GROUP' ? ' selected' : '' %>>Kelompok</option>
+    </select>
+  </label>
+  <label>Tanggal
+    <input type="date" name="workDate" value="<%= form.workDate %>" min="<%= minDate %>" max="<%= maxDate %>" required>
+  </label>
+  <div class="grid">
+    <label>Jam mulai <input type="time" name="startTime" value="<%= form.startTime %>" required></label>
+    <label>Jam selesai <input type="time" name="endTime" value="<%= form.endTime %>" required></label>
+  </div>
+  <label>Kegiatan
+    <textarea name="activity" maxlength="2000" required><%= form.activity %></textarea>
+  </label>
+  <fieldset>
+    <legend>Anggota (untuk pengajuan kelompok)</legend>
+    <input type="search" id="member-search" placeholder="Cari nama, username, atau NIK (min. 2 huruf)" autocomplete="off"
+      name="q" hx-get="/pengajuan/cari-anggota" hx-trigger="input changed delay:300ms" hx-target="#member-results" hx-swap="innerHTML">
+    <div id="member-results"></div>
+    <div id="member-chips" class="chips">
+      <% members.forEach(function (m) { %>
+      <span class="chip" data-chip="<%= m.id %>"><%= m.name %>
+        <input type="hidden" name="memberIds" value="<%= m.id %>">
+        <button type="button" class="chip-remove" data-remove-member aria-label="Hapus <%= m.name %>">&times;</button></span>
+      <% }) %>
+    </div>
+  </fieldset>
+  <div id="warnings" aria-live="polite"></div>
+  <button type="submit" class="btn">Kirim Pengajuan</button>
+</form>

@@ -102,7 +102,7 @@ test('nav menampilkan menu sesuai level', async () => {
   assert.match(hr.text, /Persetujuan HR/);
   const emp = await (await login(app.base, 'admin')).get('/');
   assert.doesNotMatch(emp.text, /href="\/persetujuan"/);
-  assert.match(emp.text, /href="\/admin"/);
+  assert.match(emp.text, /href="\/admin\/users"/);
 });
 
 const NO_LEAK = (text) => {
