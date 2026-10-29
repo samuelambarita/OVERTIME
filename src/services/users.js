@@ -4,8 +4,8 @@ const { ValidationError, NotFoundError } = require('../errors');
 const { LEVELS } = require('./levels');
 const { nowIso } = require('./time');
 const audit = require('./audit');
+const { pageParams } = require('./paging');
 
-const PAGE_SIZE = 25;
 const USERNAME_RE = /^[a-z0-9._]{3,32}$/;
 const COLS = `id, username, must_change_password, name, nik, email, level, department_id,
   supervisor_id, is_admin, is_active, created_at`;
@@ -101,7 +101,7 @@ function updateUser(db, actor, id, data) {
     const merged = {
       name: cur.name, nik: cur.nik, email: cur.email, level: cur.level,
       departmentId: cur.department_id, supervisorId: cur.supervisor_id, isAdmin: !!cur.is_admin,
-      ...data,
+      ...Object.fromEntries(Object.entries(data).filter(([, v]) => v !== undefined)),
     };
     const v = validateFields(db, merged, id);
     if (v.errors.length) throw new ValidationError(v.errors);
@@ -173,12 +173,12 @@ function listUsers(db, { q, page = 1 } = {}) {
   const where = q ? "WHERE (u.name LIKE @q ESCAPE '\\' OR u.username LIKE @q ESCAPE '\\' OR u.nik LIKE @q ESCAPE '\\')" : '';
   const params = q ? { q: like(q) } : {};
   const total = Number(db.prepare(`SELECT COUNT(*) AS c FROM users u ${where}`).get(params).c);
-  const p = Math.max(1, Number(page) || 1);
+  const { limit, offset } = pageParams(page);
   const rows = db.prepare(
     `SELECT u.id, u.username, u.must_change_password, u.name, u.nik, u.email, u.level, u.department_id,
        u.supervisor_id, u.is_admin, u.is_active, u.created_at, d.name AS department_name
      FROM users u JOIN departments d ON d.id = u.department_id ${where}
-     ORDER BY u.name, u.id LIMIT ${PAGE_SIZE} OFFSET ${(p - 1) * PAGE_SIZE}`
+     ORDER BY u.name, u.id LIMIT ${limit} OFFSET ${offset}`
   ).all(params);
   return { rows, total };
 }

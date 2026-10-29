@@ -98,3 +98,13 @@ test('listUsers dan searchUsers', () => {
   users.setActive(db, { id: ids.admin }, ids.andi, false);
   assert.ok(!users.searchUsers(db, 'andi').length);
 });
+
+test('listUsers tahan page non-integer/besar; updateUser abaikan undefined', () => {
+  const { db, ids, actor } = setup();
+  assert.strictEqual(users.listUsers(db, { page: '1.5' }).rows.length, 12);
+  assert.doesNotThrow(() => users.listUsers(db, { page: '1e30' }));
+  users.updateUser(db, actor, ids.budi, { name: 'Budi X', level: undefined, supervisorId: undefined });
+  const u = users.getUser(db, ids.budi);
+  assert.strictEqual(u.level, 1);
+  assert.strictEqual(u.supervisor_id, ids.leadit);
+});
