@@ -11,7 +11,7 @@
     <button type="submit" name="decision" value="REJECT" class="btn btn-danger" data-confirm="Tolak semua peserta yang dipilih?">Tolak yang dipilih</button>
   </div>
   <div class="table-wrap">
-    <table>
+    <table class="approval-table">
       <thead><tr>
         <th><input type="checkbox" data-select-all aria-label="Pilih semua"></th>
         <th>Nama</th><th>Departemen</th><th>Tanggal</th><th>Jam</th><th>Durasi</th><th>Kegiatan</th><th>Peringatan</th><th>Aksi</th>
@@ -21,15 +21,15 @@
         <tr class="group-row"><th colspan="9"><%= g[0].code %> &middot; diajukan oleh <%= g[0].requester_name %></th></tr>
         <% g.forEach(function (r) { %>
         <tr>
-          <td><input type="checkbox" name="ids" value="<%= r.id %>" aria-label="Pilih <%= r.name %>"></td>
-          <td><%= r.name %></td>
-          <td><%= r.department %></td>
-          <td><%= r.work_date %></td>
-          <td><%= r.start_time %>&ndash;<%= r.end_time %></td>
-          <td><%= formatHours(durationMinutes(r.start_time, r.end_time)) %></td>
-          <td class="wrap" title="<%= r.activity %>"><%= r.activity.length > 120 ? r.activity.slice(0, 120) + '…' : r.activity %></td>
-          <td class="wrap"><% r.warnings.forEach(function (w) { %><span class="warn-text"><%= w %></span> <% }) %></td>
-          <td class="row-actions">
+          <td data-label="Pilih"><input type="checkbox" name="ids" value="<%= r.id %>" aria-label="Pilih <%= r.name %>"></td>
+          <td data-label="Nama"><%= r.name %></td>
+          <td data-label="Departemen"><%= r.department %></td>
+          <td data-label="Tanggal"><%= r.work_date %></td>
+          <td data-label="Jam"><%= r.start_time %>&ndash;<%= r.end_time %></td>
+          <td data-label="Durasi"><%= formatHours(durationMinutes(r.start_time, r.end_time)) %></td>
+          <td class="wrap" data-label="Kegiatan" title="<%= r.activity %>"><%= r.activity.length > 120 ? r.activity.slice(0, 120) + '…' : r.activity %></td>
+          <td class="wrap<%= r.warnings.length ? '' : ' empty' %>" data-label="Peringatan"><% r.warnings.forEach(function (w) { %><span class="warn-text"><%= w %></span> <% }) %></td>
+          <td class="row-actions" data-label="Aksi">
             <input type="text" name="note" data-no-enter-submit form="row-<%= r.id %>" maxlength="500" placeholder="Catatan" aria-label="Catatan untuk <%= r.name %>">
             <button type="submit" form="row-<%= r.id %>" name="decision" value="APPROVE" class="btn btn-sm">Setujui</button>
             <button type="submit" form="row-<%= r.id %>" name="decision" value="REJECT" class="btn btn-sm btn-danger">Tolak</button>

@@ -119,6 +119,15 @@ test('kegiatan dengan HTML di-escape di isi dan atribut title; page ekstrem dikl
   assert.ok(ok.text.includes('data-no-enter-submit'));
 });
 
+test('tabel persetujuan bisa tampil sebagai kartu: tiap sel data berlabel kolom', async () => {
+  const c = await login(app.base, 'mgrit');
+  const page = await c.get('/persetujuan');
+  assert.match(page.text, /<table class="approval-table">/);
+  for (const label of ['Nama', 'Departemen', 'Tanggal', 'Jam', 'Durasi', 'Kegiatan', 'Aksi']) {
+    assert.ok(page.text.includes(`data-label="${label}"`), `label ${label} hilang`);
+  }
+});
+
 test('M5: textarea catatan massal boleh Enter; tombol massal punya data-confirm', async () => {
   const c = await login(app.base, 'mgrit');
   const page = await c.get('/persetujuan');
